@@ -47,12 +47,6 @@ components:
     platforms:
       - linux
       - windows
-  - name: security
-    repository: https://github.com/opensearch-project/security.git
-    ref: tags/3.3.2.0
-    platforms:
-      - linux
-      - windows
   - name: k-NN
     repository: https://github.com/opensearch-project/k-NN.git
     ref: tags/3.3.2.0
@@ -87,15 +81,6 @@ components:
       - common-utils
       - job-scheduler
       - opensearch-remote-metadata-sdk
-  - name: neural-search
-    repository: https://github.com/opensearch-project/neural-search.git
-    ref: tags/3.3.2.0
-    platforms:
-      - linux
-      - windows
-    depends_on:
-      - ml-commons
-      - k-NN
   - name: notifications-core
     repository: https://github.com/opensearch-project/notifications.git
     ref: tags/3.3.2.0
@@ -165,16 +150,6 @@ components:
       - windows
     depends_on:
       - common-utils
-  - name: security-analytics
-    repository: https://github.com/opensearch-project/security-analytics.git
-    ref: tags/3.3.2.0
-    platforms:
-      - linux
-      - windows
-    depends_on:
-      - common-utils
-      - alerting
-      - job-scheduler
   - name: index-management
     repository: https://github.com/opensearch-project/index-management.git
     ref: tags/3.3.0.0
