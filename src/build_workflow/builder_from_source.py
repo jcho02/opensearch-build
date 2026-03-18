@@ -5,12 +5,17 @@
 # this file be licensed under the Apache-2.0 license or a
 # compatible open source license.
 
+import logging
 import os
 
 from build_workflow.build_recorder import BuildRecorder
 from build_workflow.builder import Builder
 from git.git_repository import GitRepository
 from paths.script_finder import ScriptFinder
+
+# Path to the patch file to apply to the OpenSearch component after checkout.
+# Update this path to point to your actual patch file before running the build.
+OPENSEARCH_PATCH_FILE = "/home/jason/temp/opensearch-build/opensearch.patch"
 
 """
 This class is responsible for executing the build for a component and passing the results to a build recorder.
@@ -27,6 +32,14 @@ class BuilderFromSource(Builder):
             os.path.join(work_dir, self.component.name),
             self.component.working_directory,
         )
+
+        if self.component.name == "OpenSearch":
+            if os.path.isfile(OPENSEARCH_PATCH_FILE):
+                logging.info(f"Applying patch {OPENSEARCH_PATCH_FILE} to {self.component.name}")
+                self.git_repo.execute(f"git apply {OPENSEARCH_PATCH_FILE}")
+                logging.info(f"Successfully applied patch to {self.component.name}")
+            else:
+                raise FileNotFoundError(f"Patch file not found: {OPENSEARCH_PATCH_FILE}")
 
     def build(self, build_recorder: BuildRecorder) -> None:
 
