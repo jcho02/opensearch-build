@@ -5,12 +5,17 @@
 # this file be licensed under the Apache-2.0 license or a
 # compatible open source license.
 
+import glob
+import logging
 import os
 
 from build_workflow.build_recorder import BuildRecorder
 from build_workflow.builder import Builder
 from git.git_repository import GitRepository
 from paths.script_finder import ScriptFinder
+
+# Path to patch file
+OPENSEARCH_PATCH_FILE = "opensearch.patch"
 
 """
 This class is responsible for executing the build for a component and passing the results to a build recorder.
@@ -27,6 +32,86 @@ class BuilderFromSource(Builder):
             os.path.join(work_dir, self.component.name),
             self.component.working_directory,
         )
+        
+        # Apply OpenSearch patch if building OpenSearch
+        if self.component.name == "OpenSearch":
+            if os.path.isfile(OPENSEARCH_PATCH_FILE):
+                logging.info(f"Applying patch {OPENSEARCH_PATCH_FILE} to {self.component.name}")
+                self.git_repo.execute(f"git apply {OPENSEARCH_PATCH_FILE}")
+                logging.info(f"Successfully applied patch to {self.component.name}")
+            else:
+                logging.warning(f"Patch file not found: {OPENSEARCH_PATCH_FILE}")
+        
+        # Apply ppc64le fix for all Gradle-based components
+        self._apply_ppc64le_gradle_fix()
+    
+    def _apply_ppc64le_gradle_fix(self) -> None:
+        """
+        Apply ppc64le architecture fix for Gradle builds.
+        Creates gradle.properties to disable native platform support which doesn't work on ppc64le.
+        """
+        gradle_properties_path = os.path.join(self.git_repo.working_directory, "gradle.properties")
+        
+        # Check if this is a Gradle project (has gradlew or build.gradle)
+        has_gradlew = os.path.isfile(os.path.join(self.git_repo.working_directory, "gradlew"))
+        has_build_gradle = os.path.isfile(os.path.join(self.git_repo.working_directory, "build.gradle"))
+        
+        if not (has_gradlew or has_build_gradle):
+            logging.debug(f"Skipping ppc64le Gradle fix for {self.component.name} - not a Gradle project")
+            return
+        
+        gradle_properties_content = """# Disable native platform support for ppc64le architecture compatibility
+# The native-platform library doesn't support ppc64le, so we fall back to pure Java implementations
+org.gradle.native=false
+
+# Use plain console output (no rich formatting that requires native platform)
+org.gradle.console=plain
+"""
+        
+        # If gradle.properties already exists, append our settings
+        if os.path.isfile(gradle_properties_path):
+            logging.info(f"Appending ppc64le fix to existing gradle.properties for {self.component.name}")
+            with open(gradle_properties_path, 'a') as f:
+                f.write("\n" + gradle_properties_content)
+        else:
+            logging.info(f"Creating gradle.properties with ppc64le fix for {self.component.name}")
+            with open(gradle_properties_path, 'w') as f:
+                f.write(gradle_properties_content)
+    
+    def _remove_bc_fips_from_distribution(self) -> None:
+        """
+        Remove BouncyCastle FIPS jars from OpenSearch distribution to prevent jar hell.
+        This runs after OpenSearch builds but before plugins are installed.
+        """
+        if self.component.name != "OpenSearch":
+            return
+        
+        # Use git_repo.working_directory instead of component.working_directory
+        # Find the OpenSearch distribution directory
+        dist_dirs = [
+            os.path.join(self.git_repo.working_directory, "distribution/archives/linux-tar/build/install"),
+            os.path.join(self.git_repo.working_directory, "distribution/archives/darwin-tar/build/install"),
+        ]
+        
+        for dist_dir in dist_dirs:
+            if os.path.exists(dist_dir):
+                # Find all opensearch-* directories
+                for opensearch_dir in glob.glob(os.path.join(dist_dir, "opensearch-*")):
+                    lib_dir = os.path.join(opensearch_dir, "lib")
+                    if os.path.exists(lib_dir):
+                        # Remove all FIPS jars
+                        fips_patterns = [
+                            "bc-fips-*.jar",
+                            "bcpkix-fips-*.jar", 
+                            "bcutil-fips-*.jar",
+                            "bctls-fips-*.jar",
+                            "bcpg-fips-*.jar"
+                        ]
+                        for pattern in fips_patterns:
+                            for jar_file in glob.glob(os.path.join(lib_dir, pattern)):
+                                logging.info(f"Removing FIPS jar to prevent jar hell: {jar_file}")
+                                os.remove(jar_file)
+                                logging.info(f"Successfully removed: {os.path.basename(jar_file)}")
 
     def build(self, build_recorder: BuildRecorder) -> None:
 
@@ -54,6 +139,11 @@ class BuilderFromSource(Builder):
         )
 
         self.git_repo.execute(build_command)
+        
+        # Remove FIPS jars after OpenSearch build completes but before plugins are installed
+        if self.component.name == "OpenSearch":
+            self._remove_bc_fips_from_distribution()
+        
         build_recorder.record_component(self.component.name, self.git_repo)
 
     def export_artifacts(self, build_recorder: BuildRecorder) -> None:

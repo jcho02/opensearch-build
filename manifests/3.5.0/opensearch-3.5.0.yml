@@ -29,12 +29,6 @@ components:
     platforms:
       - linux
       - windows
-  - name: opensearch-learning-to-rank-base
-    repository: https://github.com/opensearch-project/opensearch-learning-to-rank-base.git
-    ref: tags/3.5.0.0
-    platforms:
-      - linux
-      - windows
   - name: opensearch-remote-metadata-sdk
     repository: https://github.com/opensearch-project/opensearch-remote-metadata-sdk.git
     ref: tags/3.5.0.0
@@ -43,12 +37,6 @@ components:
       - windows
   - name: job-scheduler
     repository: https://github.com/opensearch-project/job-scheduler.git
-    ref: tags/3.5.0.0
-    platforms:
-      - linux
-      - windows
-  - name: security
-    repository: https://github.com/opensearch-project/security.git
     ref: tags/3.5.0.0
     platforms:
       - linux
@@ -87,15 +75,6 @@ components:
       - common-utils
       - job-scheduler
       - opensearch-remote-metadata-sdk
-  - name: neural-search
-    repository: https://github.com/opensearch-project/neural-search.git
-    ref: tags/3.5.0.0
-    platforms:
-      - linux
-      - windows
-    depends_on:
-      - ml-commons
-      - k-NN
   - name: notifications-core
     repository: https://github.com/opensearch-project/notifications.git
     ref: tags/3.5.0.0
@@ -165,16 +144,6 @@ components:
       - windows
     depends_on:
       - common-utils
-  - name: security-analytics
-    repository: https://github.com/opensearch-project/security-analytics.git
-    ref: tags/3.5.0.0
-    platforms:
-      - linux
-      - windows
-    depends_on:
-      - common-utils
-      - alerting
-      - job-scheduler
   - name: index-management
     repository: https://github.com/opensearch-project/index-management.git
     ref: tags/3.5.0.0
@@ -206,7 +175,6 @@ components:
       - opensearch-remote-metadata-sdk
       - ml-commons
       - k-NN
-      - neural-search
   - name: skills
     repository: https://github.com/opensearch-project/skills.git
     ref: tags/3.5.0.0
@@ -244,7 +212,6 @@ components:
       - windows
     depends_on:
       - job-scheduler
-      - neural-search
       - k-NN
       - ml-commons
       - user-behavior-insights

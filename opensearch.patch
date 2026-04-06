@@ -1,0 +1,13 @@
+diff --git a/buildSrc/src/main/java/org/opensearch/gradle/docker/DockerSupportService.java b/buildSrc/src/main/java/org/opensearch/gradle/docker/DockerSupportService.java
+index b75bdcff..dce9ca76 100644
+--- a/buildSrc/src/main/java/org/opensearch/gradle/docker/DockerSupportService.java
++++ b/buildSrc/src/main/java/org/opensearch/gradle/docker/DockerSupportService.java
+@@ -116,7 +116,7 @@ public abstract class DockerSupportService implements BuildService<DockerSupport
+                 lastResult = runCommand(execOperations, dockerPath, "version", "--format", "{{.Server.Version}}");
+ 
+                 if (lastResult.isSuccess()) {
+-                    version = Version.fromString(lastResult.stdout.trim(), Version.Mode.RELAXED);
++                    version = Version.fromString(lastResult.stdout.trim().replaceAll("^v", ""), Version.Mode.RELAXED);
+ 
+                     isVersionHighEnough = version.onOrAfter(MINIMUM_DOCKER_VERSION);
+
