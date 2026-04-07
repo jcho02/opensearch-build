@@ -89,6 +89,13 @@ case $PLATFORM-$DISTRIBUTION-$ARCHITECTURE in
         EXTRA_PARAMS="--skip-os-packages"
         SUFFIX="$PLATFORM-arm64"
         ;;
+    linux-tar-ppc64le)
+        TARGET="--all-platforms"
+        EXT="tar.gz"
+        BUILD_PARAMS="build-platform"
+        EXTRA_PARAMS="--skip-os-packages"
+        SUFFIX="$PLATFORM-ppc64le"
+        ;;
     windows-zip-x64)
         TARGET="--windows"
         EXT="$DISTRIBUTION"

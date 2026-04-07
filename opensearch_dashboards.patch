@@ -1,0 +1,239 @@
+diff --git a/src/dev/build/cli.ts b/src/dev/build/cli.ts
+index 4935a45823..870957e335 100644
+--- a/src/dev/build/cli.ts
++++ b/src/dev/build/cli.ts
+@@ -60,6 +60,7 @@ if (showHelp) {
+         --all-platforms         {dim Produce archives for all platforms, not just this one}
+         --linux                 {dim Produce archives only for linux x64 platform}
+         --linux-arm             {dim Produce archives only for linux arm64 platform}
++	--linux-ppc64le
+         --darwin                {dim Produce archives only for darwin x64 platform}
+         --darwin-arm            {dim Produce archives only for darwin arm64 platform}
+         --windows               {dim Produce archives only for windows x64 platform}
+diff --git a/src/dev/build/lib/build.test.ts b/src/dev/build/lib/build.test.ts
+index 45ed2d27a2..40832b0efe 100644
+--- a/src/dev/build/lib/build.test.ts
++++ b/src/dev/build/lib/build.test.ts
+@@ -67,6 +67,7 @@ const config = new Config(
+ 
+ const linuxPlatform = config.getPlatform('linux', 'x64');
+ const linuxArmPlatform = config.getPlatform('linux', 'arm64');
++const linuxPowerPlatform = config.getPlatform('linux', 'ppc64le');
+ const windowsPlatform = config.getPlatform('win32', 'x64');
+ 
+ beforeEach(() => {
+@@ -117,6 +118,9 @@ describe('#getPlatformArchivePath()', () => {
+     expect(build.getPlatformArchivePath(linuxArmPlatform)).toMatchInlineSnapshot(
+       `<absolute path>/target/opensearch-dashboards-1.0.0-linux-arm64.tar.gz`
+     );
++    expect(build.getPlatformArchivePath(linuxPowerPlatform)).toMatchInlineSnapshot(
++      `<absolute path>/target/opensearch-dashboards-1.0.0-linux-ppc64le.tar.gz`
++    );
+     expect(build.getPlatformArchivePath(windowsPlatform)).toMatchInlineSnapshot(
+       `<absolute path>/target/opensearch-dashboards-1.0.0-windows-x64.zip`
+     );
+diff --git a/src/dev/build/lib/config.test.ts b/src/dev/build/lib/config.test.ts
+index 70caf6ab4f..e2d112b4f2 100644
+--- a/src/dev/build/lib/config.test.ts
++++ b/src/dev/build/lib/config.test.ts
+@@ -205,6 +205,7 @@ describe('#getTargetPlatforms()', () => {
+         "darwin-x64",
+         "linux-arm64",
+         "linux-x64",
++	"linux-ppc64le",
+         "win32-x64",
+       ]
+     `);
+@@ -324,7 +325,7 @@ describe('#getNodePlatforms()', () => {
+         .getTargetPlatforms()
+         .map((p) => p.getNodeArch())
+         .sort()
+-    ).toEqual(['darwin-arm64', 'darwin-x64', 'linux-arm64', 'linux-x64', 'win32-x64']);
++    ).toEqual(['darwin-arm64', 'darwin-x64', 'linux-arm64', 'linux-x64', 'linux-ppc64le', 'win32-x64']);
+   });
+ 
+   it('returns this platform and linux, when targetAllPlatforms = false', async () => {
+diff --git a/src/dev/build/lib/config.ts b/src/dev/build/lib/config.ts
+index c8750e9234..4041d9b5e1 100644
+--- a/src/dev/build/lib/config.ts
++++ b/src/dev/build/lib/config.ts
+@@ -158,6 +158,7 @@ export class Config {
+     if (this.targetPlatforms.darwinArm) platforms.push(this.getPlatform('darwin', 'arm64'));
+     if (this.targetPlatforms.linux) platforms.push(this.getPlatform('linux', 'x64'));
+     if (this.targetPlatforms.linuxArm) platforms.push(this.getPlatform('linux', 'arm64'));
++    if (this.targetPlatforms.linuxPpc64le) platforms.push(this.getPlatform('linux', 'ppc64le'));
+     if (this.targetPlatforms.windows) platforms.push(this.getPlatform('win32', 'x64'));
+ 
+     if (platforms.length > 0) return platforms;
+diff --git a/src/dev/build/lib/platform.ts b/src/dev/build/lib/platform.ts
+index f83107f737..92e859639f 100644
+--- a/src/dev/build/lib/platform.ts
++++ b/src/dev/build/lib/platform.ts
+@@ -29,7 +29,7 @@
+  */
+ 
+ export type PlatformName = 'win32' | 'darwin' | 'linux';
+-export type PlatformArchitecture = 'x64' | 'arm64';
++export type PlatformArchitecture = 'x64' | 'arm64' | 'ppc64le';
+ 
+ export interface TargetPlatforms {
+   darwin: boolean;
+@@ -78,6 +78,7 @@ export class Platform {
+ export const ALL_PLATFORMS = [
+   new Platform('linux', 'x64', 'linux-x64'),
+   new Platform('linux', 'arm64', 'linux-arm64'),
++  new Platform('linux', 'ppc64le', 'linux-ppc64le'),
+   new Platform('darwin', 'x64', 'darwin-x64'),
+   new Platform('darwin', 'arm64', 'darwin-arm64'),
+   new Platform('win32', 'x64', 'windows-x64'),
+diff --git a/src/dev/build/tasks/nodejs/download_node_builds_task.test.ts b/src/dev/build/tasks/nodejs/download_node_builds_task.test.ts
+index b65e384a7e..f9638633b9 100644
+--- a/src/dev/build/tasks/nodejs/download_node_builds_task.test.ts
++++ b/src/dev/build/tasks/nodejs/download_node_builds_task.test.ts
+@@ -181,6 +181,15 @@ it('downloads node builds for each platform', async () => {
+           "url": "https://mirrors.nodejs.org/dist/v14.21.3/node-v14.21.3-linux-arm64.tar.gz",
+         },
+       ],
++      Array [
++        Object {
++          "destination": "/mocked/path/.node_binaries/14.21.3/node-v14.21.3-linux-ppc64le.tar.gz",
++          "log": <ToolingLog>,
++          "retries": 3,
++          "sha256": undefined,
++          "url": "https://mirrors.nodejs.org/dist/v14.21.3/node-v14.21.3-linux-ppc64le.tar.gz",
++        },
++      ],
+       Array [
+         Object {
+           "destination": "/mocked/path/.node_binaries/14.21.3/node-v14.21.3-darwin-x64.tar.gz",
+diff --git a/src/dev/build/tasks/nodejs/extract_node_builds_task.test.ts b/src/dev/build/tasks/nodejs/extract_node_builds_task.test.ts
+index 497ec6e16d..b9e700b9f5 100644
+--- a/src/dev/build/tasks/nodejs/extract_node_builds_task.test.ts
++++ b/src/dev/build/tasks/nodejs/extract_node_builds_task.test.ts
+@@ -117,6 +117,13 @@ it('runs expected fs operations', async () => {
+             "strip": 1,
+           },
+         ],
++	Array [
++          <absolute path>/.node_binaries/<node version>/node-v<node version>-linux-ppc64le.tar.gz,
++          <absolute path>/.node_binaries/<node version>/linux-ppc64le,
++          Object {
++            "strip": 1,
++          },
++        ],
+         Array [
+           <absolute path>/.node_binaries/<node version>/node-v<node version>-darwin-x64.tar.gz,
+           <absolute path>/.node_binaries/<node version>/darwin-x64,
+@@ -145,6 +152,13 @@ it('runs expected fs operations', async () => {
+             "strip": 1,
+           },
+         ],
++	Array [
++          <absolute path>/.node_binaries/14.21.3/node-v14.21.3-linux-ppc64le.tar.gz,
++          <absolute path>/.node_binaries/14.21.3/linux-ppc64le,
++          Object {
++            "strip": 1,
++          },
++        ],
+         Array [
+           <absolute path>/.node_binaries/14.21.3/node-v14.21.3-darwin-x64.tar.gz,
+           <absolute path>/.node_binaries/14.21.3/darwin-x64,
+diff --git a/src/dev/build/tasks/nodejs/verify_existing_node_builds_task.test.ts b/src/dev/build/tasks/nodejs/verify_existing_node_builds_task.test.ts
+index 1f4e6d9cb1..cdd0ef1218 100644
+--- a/src/dev/build/tasks/nodejs/verify_existing_node_builds_task.test.ts
++++ b/src/dev/build/tasks/nodejs/verify_existing_node_builds_task.test.ts
+@@ -125,6 +125,7 @@ it('checks shasums for each downloaded node build', async () => {
+             "darwin:darwin-x64:downloadName": "valid shasum",
+             "linux:linux-arm64:downloadName": "valid shasum",
+             "linux:linux-x64:downloadName": "valid shasum",
++	    "linux:linux-ppc64le:downloadName": "valid shasum",
+             "win32:win32-x64:downloadName": "valid shasum",
+           },
+         },
+@@ -150,6 +151,14 @@ it('checks shasums for each downloaded node build', async () => {
+             "name": "linux",
+           },
+         ],
++	Array [
++          <Config>,
++          Platform {
++            "architecture": "ppc64le",
++            "buildName": "linux-ppc64le",
++            "name": "linux",
++          },
++        ],
+         Array [
+           <Config>,
+           Platform {
+@@ -192,6 +201,14 @@ it('checks shasums for each downloaded node build', async () => {
+             "version": "<node version>",
+           },
+         },
++	Object {
++          "type": "return",
++          "value": Object {
++            "downloadName": "linux:linux-ppc64le:downloadName",
++            "downloadPath": "linux:linux-ppc64le:downloadPath",
++            "version": "<node version>",
++          },
++        },
+         Object {
+           "type": "return",
+           "value": Object {
+@@ -230,6 +247,10 @@ it('checks shasums for each downloaded node build', async () => {
+           "linux:linux-arm64:downloadPath",
+           "sha256",
+         ],
++	Array [
++          "linux:linux-ppc64le:downloadPath",
++          "sha256",
++        ],
+         Array [
+           "darwin:darwin-x64:downloadPath",
+           "sha256",
+@@ -252,6 +273,10 @@ it('checks shasums for each downloaded node build', async () => {
+           "type": "return",
+           "value": "valid shasum",
+         },
++	Object {
++          "type": "return",
++          "value": "valid shasum",
++        },
+         Object {
+           "type": "return",
+           "value": "valid shasum",
+diff --git a/src/dev/build/tasks/os_packages/run_fpm.ts b/src/dev/build/tasks/os_packages/run_fpm.ts
+index f919121856..ff8cd5ad68 100644
+--- a/src/dev/build/tasks/os_packages/run_fpm.ts
++++ b/src/dev/build/tasks/os_packages/run_fpm.ts
+@@ -39,13 +39,13 @@ export async function runFpm(
+   log: ToolingLog,
+   build: Build,
+   type: 'rpm' | 'deb',
+-  arch: 'x64' | 'arm64',
++  arch: 'x64' | 'arm64' | 'ppc64le',
+   pkgSpecificFlags: string[]
+ ) {
+   const linux = config.getPlatform('linux', arch);
+   const version = config.getBuildVersion();
+   const fileName = config.resolveFromTarget(
+-    arch === 'arm64' ? `NAME-${version}-arm64.${type}` : `NAME-${version}-ARCH.TYPE`
++    arch === 'ppc64le' ? `NAME-${version}-ppc64le.${type}` : `NAME-${version}-ARCH.TYPE`
+   );
+ 
+   const resolveWithTrailingSlash = (...paths: string[]) => `${resolve(...paths)}/`;
+diff --git a/src/dev/build/tasks/patch_native_modules_task.test.ts b/src/dev/build/tasks/patch_native_modules_task.test.ts
+index 92c3156b57..4faba776ae 100644
+--- a/src/dev/build/tasks/patch_native_modules_task.test.ts
++++ b/src/dev/build/tasks/patch_native_modules_task.test.ts
+@@ -71,6 +71,10 @@ const mockPackage = {
+       url: 'https://example.com/mock-native-module/linux-x64.gz',
+       sha256: 'mock-sha256',
+     },
++    'linux-ppc64le': {
++      url: 'https://example.com/mock-native-module/linux-ppc64le.gz',
++      sha256: 'mock-sha256',
++    },
+   },
+ };
+ 
