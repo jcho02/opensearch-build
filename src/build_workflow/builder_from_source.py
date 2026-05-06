@@ -6,6 +6,7 @@
 # compatible open source license.
 
 import os
+import logging
 
 from build_workflow.build_recorder import BuildRecorder
 from build_workflow.builder import Builder
@@ -18,6 +19,7 @@ It will notify the build recorder of build information such as repository and gi
 Artifacts found in "<build root>/artifacts/<maven|plugins|libs|dist|core-plugins>" will be recognized and recorded.
 """
 
+OPENSEARCH_DASHBOARDS_PATCH_FILE = os.path.join(os.getcwd(), "opensearch_dashboards.patch")
 
 class BuilderFromSource(Builder):
     def checkout(self, work_dir: str) -> None:
@@ -27,6 +29,15 @@ class BuilderFromSource(Builder):
             os.path.join(work_dir, self.component.name),
             self.component.working_directory,
         )
+
+        if self.component.name == "OpenSearch-Dashboards":
+            if os.path.isfile(OPENSEARCH_DASHBOARDS_PATCH_FILE):
+                logging.info(f"Applying patch {OPENSEARCH_DASHBOARDS_PATCH_FILE} to {self.component.name}")
+                self.git_repo.execute(f"git apply {OPENSEARCH_DASHBOARDS_PATCH_FILE}")
+                logging.info(f"Successfully applied patch to {self.component.name}")
+            else:
+                logging.warning(f"Patch file not found: {OPENSEARCH_DASHBOARDS_PATCH_FILE}")
+
 
     def build(self, build_recorder: BuildRecorder) -> None:
 
