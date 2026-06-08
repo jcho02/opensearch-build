@@ -76,14 +76,18 @@ echo OUTPUT_REAL $OUTPUT_REAL
 mkdir -p "${OUTPUT_REAL}"/plugins
 mkdir -p "${OUTPUT_REAL}"/dist/
 
-# Copy arrow as it is needed before analytics-engine
+# Copy arrow plugins as they are needed before analytics-engine
 DIR="$(dirname "$0")"
 echo $DIR
 cd $DIR
+cp -v ../../../tar/builds/opensearch/core-plugins/arrow-base-$VERSION.zip \
+    "${OUTPUT_REAL}"/plugins/0-1-arrow-base-$VERSION.zip || \
+cp -v ../../../zip/builds/opensearch/core-plugins/arrow-base-$VERSION.zip \
+    "${OUTPUT_REAL}"/plugins/0-1-arrow-base-$VERSION.zip
 cp -v ../../../tar/builds/opensearch/core-plugins/arrow-flight-rpc-$VERSION.zip \
-    "${OUTPUT_REAL}"/plugins/0-arrow-flight-rpc-$VERSION.zip || \
+    "${OUTPUT_REAL}"/plugins/0-2-arrow-flight-rpc-$VERSION.zip || \
 cp -v ../../../zip/builds/opensearch/core-plugins/arrow-flight-rpc-$VERSION.zip \
-    "${OUTPUT_REAL}"/plugins/0-arrow-flight-rpc-$VERSION.zip
+    "${OUTPUT_REAL}"/plugins/0-2-arrow-flight-rpc-$VERSION.zip
 
 cd -
 
@@ -106,7 +110,13 @@ for plugin in ./*; do
         PLUGIN_NAME=$INSTALL_ORDER-$PLUGIN_NAME
         INSTALL_ORDER=$((INSTALL_ORDER + 1))
       fi
-      cp -v "$plugin"/build/distributions/"$PLUGIN_ARTIFACT_BUILD_NAME" "${OUTPUT_REAL}"/plugins/"$PLUGIN_NAME-$VERSION.zip"
+
+      if [ "$PLUGIN_NAME" = "dsl-query-executor" ]; then  # temp put dsl plugin to dist to build but avoid installation
+        cp -v "$plugin"/build/distributions/"$PLUGIN_ARTIFACT_BUILD_NAME" "${OUTPUT_REAL}"/dist/"$PLUGIN_NAME-$VERSION.zip"
+      else
+        cp -v "$plugin"/build/distributions/"$PLUGIN_ARTIFACT_BUILD_NAME" "${OUTPUT_REAL}"/plugins/"$PLUGIN_NAME-$VERSION.zip"
+      fi
+
     else
       echo "Ignore $PLUGIN_NAME as it is not in the required list"
     fi

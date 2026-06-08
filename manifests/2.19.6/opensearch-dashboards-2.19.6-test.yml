@@ -5,16 +5,16 @@ ci:
   image:
     linux:
       tar:
-        name: opensearchstaging/ci-runner:ci-runner-almalinux8-opensearch-dashboards-integtest-v2
-        args: -u 1000 --cpus 4 -m 16g
+        name: opensearchstaging/ci-runner:ci-runner-almalinux8-opensearch-dashboards-integtest-v1
+        args: -u 1000 --cpus 4 -m 16g -e BROWSER_PATH=electron
       deb:
-        name: opensearchstaging/ci-runner:ci-runner-ubuntu2404-systemd-base-integtest-v2
+        name: opensearchstaging/ci-runner:ci-runner-ubuntu2404-systemd-base-integtest-v1
         args: --entrypoint=/usr/lib/systemd/systemd -u root --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:rw
-          --cgroupns=host --cpus 4 -m 16g
+          --cgroupns=host --cpus 4 -m 16g -e BROWSER_PATH=electron
       rpm:
-        name: opensearchstaging/ci-runner:ci-runner-almalinux8-systemd-base-integtest-v2
+        name: opensearchstaging/ci-runner:ci-runner-almalinux8-systemd-base-integtest-v1
         args: --entrypoint=/usr/lib/systemd/systemd -u root --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:rw
-          --cgroupns=host --cpus 4 -m 16g
+          --cgroupns=host --cpus 4 -m 16g -e BROWSER_PATH=electron
     windows:
       zip:
         name: opensearchstaging/ci-runner:ci-runner-windows2019-opensearch-build-v1
@@ -40,6 +40,11 @@ components:
         - with-security
         - without-security
   - name: anomalyDetectionDashboards
+    integ-test:
+      test-configs:
+        - with-security
+        - without-security
+  - name: ganttChartDashboards
     integ-test:
       test-configs:
         - with-security
@@ -113,21 +118,3 @@ components:
       test-configs:
         - with-security
         - without-security
-  - name: investigationDashboards
-    integ-test:
-      test-configs:
-        - with-security
-        - without-security
-      additional-cluster-configs:
-        opensearch_security.multitenancy.enabled: false
-        data_source.enabled: true
-        data_source.ssl.verificationMode: none
-        data_source.hideLocalCluster: true
-        investigation.enabled: true
-        investigation.agenticFeaturesEnabled: true
-        uiSettings.overrides.home:useNewHomePage: true
-        workspace.enabled: true
-        savedObjects.permission.enabled: true
-        opensearchDashboards.dashboardAdmin.users:
-          - admin
-        explore.enabled: true
