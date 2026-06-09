@@ -75,11 +75,11 @@ mkdir -p $OUTPUT/maven/org/opensearch
 
 # Build project and publish to maven local.
 echo "Building and publishing OpenSearch project to Maven Local"
-./gradlew publishToMavenLocal -Dbuild.snapshot=$SNAPSHOT -Dbuild.version_qualifier=$QUALIFIER -PrustRelease -Pcrypto.standard=FIPS-140-3
+./gradlew publishToMavenLocal -Dbuild.snapshot=$SNAPSHOT -Dbuild.version_qualifier=$QUALIFIER -Dsandbox.enabled=true -PrustRelease -Pcrypto.standard=FIPS-140-3
 
 # Publish to existing test repo, using this to stage release versions of the artifacts that can be released from the same build.
 echo "Publishing OpenSearch to Test Repository"
-./gradlew publishNebulaPublicationToTestRepository -Dbuild.snapshot=$SNAPSHOT -Dbuild.version_qualifier=$QUALIFIER -PrustRelease -Pcrypto.standard=FIPS-140-3
+./gradlew publishNebulaPublicationToTestRepository -Dbuild.snapshot=$SNAPSHOT -Dbuild.version_qualifier=$QUALIFIER -Dsandbox.enabled=true -PrustRelease -Pcrypto.standard=FIPS-140-3
 
 # Copy maven publications to be promoted
 echo "Copying Maven publications to $OUTPUT/maven/org"
@@ -164,24 +164,25 @@ esac
 
 echo "Building OpenSearch for $PLATFORM-$DISTRIBUTION-$ARCHITECTURE"
 
-./gradlew :distribution:$TYPE:$TARGET:assemble -Dbuild.snapshot=$SNAPSHOT -Dbuild.version_qualifier=$QUALIFIER -PrustRelease -Pcrypto.standard=FIPS-140-3
+./gradlew :distribution:$TYPE:$TARGET:assemble -Dbuild.snapshot=$SNAPSHOT -Dbuild.version_qualifier=$QUALIFIER -Dsandbox.enabled=true -PrustRelease -Pcrypto.standard=FIPS-140-3
 
 # Copy artifact to dist folder in bundle build output
 echo "Copying artifact to ${OUTPUT}/dist"
 [[ "$SNAPSHOT" == "true" ]] && IDENTIFIER="-SNAPSHOT"
 ARTIFACT_BUILD_NAME=`ls distribution/$TYPE/$TARGET/build/distributions/ | grep "opensearch-min.*$SUFFIX.$EXT"`
 mkdir -p "${OUTPUT}/dist"
-cp distribution/$TYPE/$TARGET/build/distributions/$ARTIFACT_BUILD_NAME "${OUTPUT}"/dist/$ARTIFACT_BUILD_NAME
+cp -v distribution/$TYPE/$TARGET/build/distributions/$ARTIFACT_BUILD_NAME "${OUTPUT}"/dist/$ARTIFACT_BUILD_NAME
 
 echo "Building core plugins..."
 mkdir -p "${OUTPUT}/core-plugins"
 cd plugins
-../gradlew assemble -Dbuild.snapshot="$SNAPSHOT" -Dbuild.version_qualifier=$QUALIFIER -PrustRelease -Pcrypto.standard=FIPS-140-3
+../gradlew assemble -Dbuild.snapshot="$SNAPSHOT" -Dbuild.version_qualifier=$QUALIFIER -Dsandbox.enabled=true -PrustRelease -Pcrypto.standard=FIPS-140-3
 cd ..
 for plugin in plugins/*; do
   PLUGIN_NAME=$(basename "$plugin")
   if [ -d "$plugin" ] && [ "examples" != "$PLUGIN_NAME" ]; then
     PLUGIN_ARTIFACT_BUILD_NAME=`ls "$plugin"/build/distributions/ | grep "$PLUGIN_NAME.*$IDENTIFIER.zip"`
-    cp "$plugin"/build/distributions/"$PLUGIN_ARTIFACT_BUILD_NAME" "${OUTPUT}"/core-plugins/"$PLUGIN_ARTIFACT_BUILD_NAME"
+    cp -v "$plugin"/build/distributions/"$PLUGIN_ARTIFACT_BUILD_NAME" "${OUTPUT}"/core-plugins/"$PLUGIN_ARTIFACT_BUILD_NAME"
   fi
 done
+

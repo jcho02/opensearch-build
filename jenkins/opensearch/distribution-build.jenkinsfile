@@ -10,14 +10,14 @@
 // @job-name: distribution-build-opensearch
 // @description: Build OpenSearch distribution based on the input manifest and provided parameters.
 
-lib = library(identifier: 'jenkins@11.3.0', retriever: modernSCM([
+lib = library(identifier: 'jenkins@12.0.0', retriever: modernSCM([
     $class: 'GitSCMSource',
     remote: 'https://github.com/opensearch-project/opensearch-build-libraries.git',
 ]))
 
 def secret_github_bot = [
-    [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
-    [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-username'],
+    [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
 ]
 
 pipeline {
@@ -96,6 +96,12 @@ pipeline {
             description: '<Optional> Build docker image or not with options. Defaults to build_docker.',
             choices: ['build_docker', 'build_docker_with_build_number_tag', 'do_not_build_docker'],
         )
+        string(
+            name: 'PARALLEL',
+            description: '<Optional> Number of parallel workers for component builds. Set to 0 or empty to disable. Default is 4.',
+            defaultValue: '4',
+            trim: true
+        )
         booleanParam(
             name: 'UPDATE_LATEST_URL',
             description: '<Optional> Update latest url so /latest/ is pointed to this build',
@@ -110,6 +116,11 @@ pipeline {
             name: 'CONTINUE_ON_ERROR',
             description: '<Optional> Continue building the distribution even if a one or more component fails',
             defaultValue: true
+        )
+        booleanParam(
+            name: 'SKIP_ARTIFACT_CHECK',
+            description: '<Optional> Skip Artifact Check upon completing the build of a component and plugin',
+            defaultValue: false
         )
         booleanParam(
             name: 'INCREMENTAL',
@@ -252,8 +263,10 @@ pipeline {
                                 architecture: 'x64',
                                 distribution: 'tar',
                                 continueOnError: params.CONTINUE_ON_ERROR,
+                                skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
                                 incremental: params.INCREMENTAL,
-                                previousBuildId: params.PREVIOUS_BUILD_ID
+                                previousBuildId: params.PREVIOUS_BUILD_ID,
+                                parallel: params.PARALLEL
                             )
                             String buildManifestUrl = buildManifestObj.getUrl(JOB_NAME, BUILD_NUMBER)
                             String artifactUrl = buildManifestObj.getArtifactUrl(JOB_NAME, BUILD_NUMBER)
@@ -336,8 +349,10 @@ pipeline {
                                         architecture: 'x64',
                                         distribution: 'rpm',
                                         continueOnError: params.CONTINUE_ON_ERROR,
+                                        skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
                                         incremental: params.INCREMENTAL,
                                         previousBuildId: params.PREVIOUS_BUILD_ID,
+                                        parallel: params.PARALLEL,
                                         stashName: "build-archive-linux-x64-rpm-${JOB_NAME}-${BUILD_NUMBER}"
                                     )
                                 }
@@ -371,6 +386,7 @@ pipeline {
                                         architecture: 'x64',
                                         distribution: 'rpm',
                                         continueOnError: params.CONTINUE_ON_ERROR,
+                                        skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
                                         stashName: "build-archive-linux-x64-rpm-${JOB_NAME}-${BUILD_NUMBER}"
                                     )
                                     String buildManifestUrl = buildManifestObj.getUrl(JOB_NAME, BUILD_NUMBER)
@@ -452,8 +468,10 @@ pipeline {
                                         architecture: 'x64',
                                         distribution: 'deb',
                                         continueOnError: params.CONTINUE_ON_ERROR,
+                                        skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
                                         incremental: params.INCREMENTAL,
                                         previousBuildId: params.PREVIOUS_BUILD_ID,
+                                        parallel: params.PARALLEL,
                                         stashName: "build-archive-linux-x64-deb-${JOB_NAME}-${BUILD_NUMBER}"
                                     )
                                 }
@@ -487,6 +505,7 @@ pipeline {
                                         architecture: 'x64',
                                         distribution: 'deb',
                                         continueOnError: params.CONTINUE_ON_ERROR,
+                                        skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
                                         stashName: "build-archive-linux-x64-deb-${JOB_NAME}-${BUILD_NUMBER}"
                                     )
                                     String buildManifestUrl = buildManifestObj.getUrl(JOB_NAME, BUILD_NUMBER)
@@ -565,8 +584,10 @@ pipeline {
                                 architecture: 'arm64',
                                 distribution: 'tar',
                                 continueOnError: params.CONTINUE_ON_ERROR,
+                                skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
                                 incremental: params.INCREMENTAL,
-                                previousBuildId: params.PREVIOUS_BUILD_ID
+                                previousBuildId: params.PREVIOUS_BUILD_ID,
+                                parallel: params.PARALLEL
                             )
                             String buildManifestUrl = buildManifestObj.getUrl(JOB_NAME, BUILD_NUMBER)
                             String artifactUrl = buildManifestObj.getArtifactUrl(JOB_NAME, BUILD_NUMBER)
@@ -646,8 +667,10 @@ pipeline {
                                         architecture: 'arm64',
                                         distribution: 'rpm',
                                         continueOnError: params.CONTINUE_ON_ERROR,
+                                        skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
                                         incremental: params.INCREMENTAL,
                                         previousBuildId: params.PREVIOUS_BUILD_ID,
+                                        parallel: params.PARALLEL,
                                         stashName: "build-archive-linux-arm64-rpm-${JOB_NAME}-${BUILD_NUMBER}"
                                     )
                                 }
@@ -681,6 +704,7 @@ pipeline {
                                         architecture: 'arm64',
                                         distribution: 'rpm',
                                         continueOnError: params.CONTINUE_ON_ERROR,
+                                        skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
                                         stashName: "build-archive-linux-arm64-rpm-${JOB_NAME}-${BUILD_NUMBER}"
                                     )
                                     String buildManifestUrl = buildManifestObj.getUrl(JOB_NAME, BUILD_NUMBER)
@@ -763,8 +787,10 @@ pipeline {
                                         architecture: 'arm64',
                                         distribution: 'deb',
                                         continueOnError: params.CONTINUE_ON_ERROR,
+                                        skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
                                         incremental: params.INCREMENTAL,
                                         previousBuildId: params.PREVIOUS_BUILD_ID,
+                                        parallel: params.PARALLEL,
                                         stashName: "build-archive-linux-arm64-deb-${JOB_NAME}-${BUILD_NUMBER}"
                                     )
                                 }
@@ -798,6 +824,7 @@ pipeline {
                                         architecture: 'arm64',
                                         distribution: 'deb',
                                         continueOnError: params.CONTINUE_ON_ERROR,
+                                        skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
                                         stashName: "build-archive-linux-arm64-deb-${JOB_NAME}-${BUILD_NUMBER}"
                                     )
                                     String buildManifestUrl = buildManifestObj.getUrl(JOB_NAME, BUILD_NUMBER)
@@ -881,8 +908,10 @@ pipeline {
                                     architecture: 'x64',
                                     distribution: 'zip',
                                     continueOnError: params.CONTINUE_ON_ERROR,
-                                    incremental: false,
-                                    previousBuildId: params.PREVIOUS_BUILD_ID
+                                    skipArtifactCheck: params.SKIP_ARTIFACT_CHECK,
+                                    incremental: params.INCREMENTAL,
+                                    previousBuildId: params.PREVIOUS_BUILD_ID,
+                                    parallel: params.PARALLEL
                                 )
                                 String buildManifestUrl = buildManifestObj.getUrl(JOB_NAME, BUILD_NUMBER)
                                 String artifactUrl = buildManifestObj.getArtifactUrl(JOB_NAME, BUILD_NUMBER)
@@ -1107,8 +1136,8 @@ def triggerDistributionValidationWorkflow(String version) {
 
 def triggerNightlyPlayground() {
     def secret_github_bot = [
-        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
-        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
     ]
     withSecrets(secrets: secret_github_bot){
         println("Triggering nightly playground workflow.")

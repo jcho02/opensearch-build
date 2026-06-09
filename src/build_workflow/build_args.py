@@ -91,11 +91,27 @@ class BuildArgs:
             dest="distribution"
         )
         parser.add_argument(
+            "--skip-artifact-check",
+            dest="skip_artifact_check",
+            default=False,
+            action="store_true",
+            help="Skip artifact checks when building components and plugins.",
+        )
+        parser.add_argument(
             "--continue-on-error",
             dest="continue_on_error",
             default=False,
             action="store_true",
             help="Do not fail the distribution build on any plugin component failure.",
+        )
+        parser.add_argument(
+            "--parallel",
+            dest="parallel",
+            type=int,
+            nargs='?',
+            const=4,
+            default=None,
+            help="Build components in parallel using a dependency graph. Optionally specify max workers (default: 4).",
         )
         group = parser.add_mutually_exclusive_group()
         group.add_argument(
@@ -127,7 +143,9 @@ class BuildArgs:
         self.distribution = args.distribution
         self.script_path = sys.argv[0].replace("/src/run_build.py", "/build.sh")
         self.continue_on_error = args.continue_on_error
+        self.skip_artifact_check = args.skip_artifact_check
         self.incremental = args.incremental
+        self.parallel = args.parallel
 
     def component_command(self, name: str) -> str:
         return " ".join(
