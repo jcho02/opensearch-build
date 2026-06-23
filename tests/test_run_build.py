@@ -457,3 +457,105 @@ class TestRunBuild(unittest.TestCase):
 
         mock_recorder.assert_called_once()
         mock_recorder.return_value.write_manifest.assert_called()
+
+    @patch("argparse._sys.argv", ["run_build.py", OPENSEARCH_MANIFEST, "-p", "linux", "--parallel"])
+    @patch("run_build.Builders.builder_from", return_value=MagicMock())
+    @patch("run_build.BuildRecorder", return_value=MagicMock())
+    @patch("run_build.TemporaryDirectory")
+    def test_main_parallel_builds_all_components(self, mock_temp: Mock, mock_recorder: Mock, mock_builder: Mock, *mocks: Any) -> None:
+        mock_temp.return_value.__enter__.return_value.name = tempfile.gettempdir()
+        main()
+        self.assertNotEqual(mock_builder.return_value.build.call_count, 0)
+        self.assertEqual(mock_builder.return_value.build.call_count, mock_builder.return_value.export_artifacts.call_count)
+        mock_recorder.return_value.write_manifest.assert_called()
+
+    @patch("argparse._sys.argv", ["run_build.py", OPENSEARCH_MANIFEST, "-p", "linux", "--parallel", "2"])
+    @patch("run_build.Builders.builder_from", return_value=MagicMock())
+    @patch("run_build.BuildRecorder", return_value=MagicMock())
+    @patch("run_build.TemporaryDirectory")
+    def test_main_parallel_with_custom_workers(self, mock_temp: Mock, mock_recorder: Mock, mock_builder: Mock, *mocks: Any) -> None:
+        mock_temp.return_value.__enter__.return_value.name = tempfile.gettempdir()
+        main()
+        self.assertNotEqual(mock_builder.return_value.build.call_count, 0)
+        self.assertEqual(mock_builder.return_value.build.call_count, mock_builder.return_value.export_artifacts.call_count)
+        mock_recorder.return_value.write_manifest.assert_called()
+
+    @patch("argparse._sys.argv", ["run_build.py", OPENSEARCH_MANIFEST_3_x, "-p", "linux", "--parallel"])
+    @patch("run_build.Builders.builder_from", return_value=MagicMock())
+    @patch("run_build.BuildRecorder", return_value=MagicMock())
+    @patch("run_build.TemporaryDirectory")
+    def test_main_parallel_3x_manifest(self, mock_temp: Mock, mock_recorder: Mock, mock_builder: Mock, *mocks: Any) -> None:
+        mock_temp.return_value.__enter__.return_value.name = tempfile.gettempdir()
+        main()
+        self.assertNotEqual(mock_builder.return_value.build.call_count, 0)
+        self.assertEqual(mock_builder.return_value.build.call_count, mock_builder.return_value.export_artifacts.call_count)
+        mock_recorder.return_value.write_manifest.assert_called()
+
+    @patch("argparse._sys.argv", ["run_build.py", OPENSEARCH_MANIFEST, "-p", "linux", "--parallel", "--continue-on-error"])
+    @patch("run_build.Builders.builder_from", return_value=MagicMock())
+    @patch("run_build.BuildRecorder", return_value=MagicMock())
+    @patch("run_build.TemporaryDirectory")
+    @patch("run_build.logging.error")
+    @patch("run_build.logging.info")
+    def test_main_parallel_continue_on_error_plugin_failure(
+            self, mock_logging_info: Mock, mock_logging_error: Mock,
+            mock_temp: Mock, mock_recorder: Mock, mock_builder_from: Mock, *mocks: Any) -> None:
+        mock_temp.return_value.__enter__.return_value.name = tempfile.gettempdir()
+
+        def builder_side_effect(component: Any, target: Any) -> MagicMock:
+            builder = MagicMock()
+            if component.name == "geospatial":
+                def fail_build(*a: Any, **kw: Any) -> None:
+                    raise Exception("geospatial build failed")
+                builder.build.side_effect = fail_build
+            return builder
+
+        mock_builder_from.side_effect = builder_side_effect
+
+        main()
+        mock_recorder.return_value.write_manifest.assert_called()
+        mock_logging_error.assert_any_call(f"Error building geospatial, retry with: run_build.py {self.OPENSEARCH_MANIFEST} --component geospatial")
+        mock_logging_info.assert_any_call("Successfully built OpenSearch")
+
+    @patch("argparse._sys.argv", ["run_build.py", OPENSEARCH_MANIFEST, "-p", "linux", "--parallel"])
+    @patch("run_build.Builders.builder_from", return_value=MagicMock())
+    @patch("run_build.BuildRecorder", return_value=MagicMock())
+    @patch("run_build.TemporaryDirectory")
+    def test_main_parallel_core_builds_first(self, mock_temp: Mock, mock_recorder: Mock, mock_builder_from: Mock, *mocks: Any) -> None:
+        mock_temp.return_value.__enter__.return_value.name = tempfile.gettempdir()
+
+        build_order: list = []
+
+        def track_builder(component: Any, target: Any) -> MagicMock:
+            builder = MagicMock()
+
+            def track_build(*args: Any, **kwargs: Any) -> None:
+                build_order.append(component.name)
+            builder.build.side_effect = track_build
+            return builder
+
+        mock_builder_from.side_effect = track_builder
+        main()
+
+        self.assertEqual(build_order[0], "OpenSearch")
+
+    @patch("argparse._sys.argv", ["run_build.py", OPENSEARCH_MANIFEST, "-p", "linux", "--parallel"])
+    @patch("run_build.Builders.builder_from", return_value=MagicMock())
+    @patch("run_build.BuildRecorder", return_value=MagicMock())
+    @patch("run_build.TemporaryDirectory")
+    @patch("run_build.logging.error")
+    def test_main_parallel_raises_on_core_failure(self, mock_logging_error: Mock, mock_temp: Mock, mock_recorder: Mock, mock_builder_from: Mock, *mocks: Any) -> None:
+        mock_temp.return_value.__enter__.return_value.name = tempfile.gettempdir()
+
+        def fail_core(component: Any, target: Any) -> MagicMock:
+            builder = MagicMock()
+            if component.name == "OpenSearch":
+                builder.build.side_effect = Exception("OpenSearch build failed")
+            return builder
+
+        mock_builder_from.side_effect = fail_core
+
+        with self.assertRaises(Exception) as ctx:
+            main()
+        self.assertIn("OpenSearch build failed", str(ctx.exception))
+        mock_logging_error.assert_any_call(f"Error building OpenSearch, retry with: run_build.py {self.OPENSEARCH_MANIFEST} --component OpenSearch")

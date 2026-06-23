@@ -2,7 +2,7 @@
 schema-version: '1.2'
 build:
   name: OpenSearch
-  version: 3.7.0
+  version: 3.8.0
 ci:
   image:
     linux:
@@ -64,7 +64,7 @@ components:
       - security
   - name: sql
     repository: https://github.com/opensearch-project/sql.git
-    ref: 'feature/mustang-ppl-integration'
+    ref: 'main'
     platforms:
       - linux
       - windows
