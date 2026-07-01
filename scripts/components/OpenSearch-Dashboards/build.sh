@@ -124,6 +124,13 @@ case $PLATFORM-$DISTRIBUTION-$ARCHITECTURE in
         EXTRA_PARAMS="--skip-archives"
         SUFFIX="arm64"
         ;;
+    linux-tar-ppc64le)
+        TARGET="--all-platforms"
+        EXT="tar.gz"
+        BUILD_PARAMS="build-platform"
+        EXTRA_PARAMS="--skip-os-packages"
+        SUFFIX="$PLATFORM-ppc64le"
+        ;;
     *)
         echo "Unsupported platform-distribution-architecture combination: $PLATFORM-$DISTRIBUTION-$ARCHITECTURE"
         exit 1
