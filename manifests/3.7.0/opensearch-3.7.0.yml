@@ -61,16 +61,6 @@ components:
     platforms:
       - linux
       - windows
-  - name: k-NN
-    repository: https://github.com/opensearch-project/k-NN.git
-    ref: tags/3.7.0.0
-    platforms:
-      - linux
-      - windows
-    depends_on:
-      - common-utils
-      - security
-      - custom-codecs
   - name: geospatial
     repository: https://github.com/opensearch-project/geospatial.git
     ref: tags/3.7.0.0
@@ -98,16 +88,6 @@ components:
       - job-scheduler
       - opensearch-remote-metadata-sdk
       - security
-  - name: neural-search
-    repository: https://github.com/opensearch-project/neural-search.git
-    ref: tags/3.7.0.0
-    platforms:
-      - linux
-      - windows
-    depends_on:
-      - ml-commons
-      - k-NN
-      - job-scheduler
   - name: notifications-core
     repository: https://github.com/opensearch-project/notifications.git
     ref: tags/3.7.0.0
@@ -216,8 +196,6 @@ components:
       - common-utils
       - opensearch-remote-metadata-sdk
       - ml-commons
-      - k-NN
-      - neural-search
       - job-scheduler
   - name: skills
     repository: https://github.com/opensearch-project/skills.git
@@ -231,8 +209,6 @@ components:
       - sql
       - ml-commons
       - alerting
-      - neural-search
-      - k-NN
   - name: query-insights
     repository: https://github.com/opensearch-project/query-insights.git
     ref: tags/3.7.0.0
@@ -261,7 +237,5 @@ components:
       - windows
     depends_on:
       - job-scheduler
-      - neural-search
-      - k-NN
       - ml-commons
       - user-behavior-insights
