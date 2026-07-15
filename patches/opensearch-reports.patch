@@ -1,0 +1,14 @@
+diff --git a/build.gradle b/build.gradle
+--- a/build.gradle
++++ b/build.gradle
+@@ -172,7 +172,7 @@ allprojects {
+         force "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
+         force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlin_version}"
+         force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${kotlin_version}"
+         force "org.jetbrains.kotlin:kotlin-reflect:${kotlin_version}"
+         force "org.jetbrains.kotlin:kotlin-stdlib-common:${kotlin_version}"
+-        force "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.11.4"
++        force "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${versions.jackson_databind}"
+         force "org.yaml:snakeyaml:2.0"
+         force "org.slf4j:slf4j-api:2.0.7"
+         force "ch.qos.logback:logback-classic:1.5.20"

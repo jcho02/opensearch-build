@@ -13,7 +13,10 @@ from build_workflow.builder import Builder
 from git.git_repository import GitRepository
 from paths.script_finder import ScriptFinder
 
-OPENSEARCH_PATCH_FILE = os.path.join(os.getcwd(),"opensearch.patch")
+OPENSEARCH_PATCH_FILE = os.path.join(os.getcwd(), "opensearch.patch")
+
+# Per-component patch files under patches/<ComponentName>.patch next to build.sh
+PATCHES_DIR = os.path.join(os.getcwd(), "patches")
 
 """
 This class is responsible for executing the build for a component and passing the results to a build recorder.
@@ -30,7 +33,7 @@ class BuilderFromSource(Builder):
             os.path.join(work_dir, self.component.name),
             self.component.working_directory,
         )
-        # Apply OpenSearch patch if building OpenSearch
+        # Apply OpenSearch core patch (opensearch.patch) if building OpenSearch
         if self.component.name == "OpenSearch":
             if os.path.isfile(OPENSEARCH_PATCH_FILE):
                 logging.info(f"Applying patch {OPENSEARCH_PATCH_FILE} to {self.component.name}")
@@ -38,6 +41,14 @@ class BuilderFromSource(Builder):
                 logging.info(f"Successfully applied patch to {self.component.name}")
             else:
                 logging.warning(f"Patch file not found: {OPENSEARCH_PATCH_FILE}")
+
+        # Per-component patch support: patches/<ComponentName>.patch
+        component_patch_file = os.path.join(PATCHES_DIR, f"{self.component.name}.patch")
+        if os.path.isfile(component_patch_file):
+            logging.info(f"Applying patch {component_patch_file} to {self.component.name}")
+            self.git_repo.execute(f"git apply {component_patch_file}")
+            logging.info(f"Successfully applied patch to {self.component.name}")
+
         self._apply_ppc64le_gradle_fix()
         self._apply_kotlin_version_fix()
 
@@ -146,3 +157,4 @@ class BuilderFromSource(Builder):
                     absolute_path = os.path.join(dir, file_name)
                     relative_path = os.path.relpath(absolute_path, artifacts_path)
                     build_recorder.record_artifact(self.component.name, artifact_type, relative_path, absolute_path)
+

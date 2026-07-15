@@ -1,0 +1,12 @@
+diff --git a/core/build.gradle b/core/build.gradle
+--- a/core/build.gradle
++++ b/core/build.gradle
+@@ -61,8 +61,8 @@ dependencies {
+     api "net.minidev:json-smart:${versions.json_smart}"
+-    api('org.apache.calcite:calcite-core:1.41.0') {
++    api('org.apache.calcite:calcite-core:1.42.0') {
+         exclude group: 'net.minidev', module: 'json-smart'
+     }
+-    api 'org.apache.calcite:calcite-linq4j:1.41.0'
++    api 'org.apache.calcite:calcite-linq4j:1.42.0'
+     api project(':common')

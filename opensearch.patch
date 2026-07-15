@@ -1,5 +1,5 @@
 diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
-index 1234567..abcdefg 100644
+index 23e45f4cf44..f11279f9b2e 100644
 --- a/gradle/libs.versions.toml
 +++ b/gradle/libs.versions.toml
 @@ -4,7 +4,7 @@ opensearch        = "3.6.0"
@@ -11,3 +11,36 @@ index 1234567..abcdefg 100644
  
  # optional dependencies
  spatial4j               = "0.7"
+@@ -10,11 +10,11 @@ spatial4j               = "0.7"
+ jts                     = "1.15.0"
+ jackson_annotations     = "2.21"
+ jackson                 = "2.21.2"
+-jackson_databind        = "2.21.2"
++jackson_databind        = "2.21.5"
+ snakeyaml               = "2.1"
+ icu4j                   = "77.1"
+ supercsv                = "2.4.0"
+-log4j                   = "2.25.3"
++log4j                   = "2.25.4"
+ error_prone_annotations = "2.45.0"
+ slf4j                   = "2.0.17"
+ asm                     = "9.9.1"
+@@ -37,7 +37,7 @@ json_smart              = "2.5.2"
+ # when updating the JNA version, also update the version in buildSrc/build.gradle
+ jna               = "5.16.0"
+ 
+-netty             = "4.2.12.Final"
++netty             = "4.2.16.Final"
+ joda              = "2.12.7"
+ roaringbitmap     = "1.3.0"
+ 
+@@ -46,7 +46,7 @@ reactor_netty     = "1.3.4"
+ reactor           = "3.8.4"
+ 
+ # client dependencies
+-httpclient5       = "5.6"
++httpclient5       = "5.6.1"
+ httpcore5         = "5.4"
+ httpclient        = "4.5.14"
+ httpcore          = "4.4.16"
+

@@ -1,0 +1,13 @@
+diff --git a/build.gradle b/build.gradle
+--- a/build.gradle
++++ b/build.gradle
+@@ -131,7 +131,7 @@ allprojects {
+         force "org.apache.httpcomponents.core5:httpcore5:${versions.httpcore5}"
+         force "org.apache.httpcomponents.core5:httpcore5-h2:${versions.httpcore5}"
+         force "org.apache.httpcomponents.client5:httpclient5:${versions.httpclient5}"
+         force "org.apache.httpcomponents.client5:httpclient5-osgi:${versions.httpclient5}"
+-        force 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
++        force "com.fasterxml.jackson.core:jackson-databind:${versions.jackson_databind}"
+         force 'org.yaml:snakeyaml:2.0'
+         force 'org.codehaus.plexus:plexus-utils:3.0.24'
+         force 'net.java.dev.jna:jna:5.12.1'

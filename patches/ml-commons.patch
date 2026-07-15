@@ -1,0 +1,28 @@
+diff --git a/plugin/build.gradle b/plugin/build.gradle
+--- a/plugin/build.gradle
++++ b/plugin/build.gradle
+@@ -710,11 +710,11 @@ configurations.all {
+     resolutionStrategy.force 'com.networknt:json-schema-validator:1.5.7'
+-    resolutionStrategy.force 'com.fasterxml.jackson:jackson-bom:2.18.3'
++    resolutionStrategy.force "com.fasterxml.jackson:jackson-bom:${versions.jackson_databind}"
+     resolutionStrategy.force 'org.yaml:snakeyaml:2.3'
+-    resolutionStrategy.force 'com.fasterxml.jackson.dataformat:jackson-dataformat-smile:2.18.3'
+-    resolutionStrategy.force 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.3'
+-    resolutionStrategy.force 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.18.3'
+-    resolutionStrategy.force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3'
++    resolutionStrategy.force "com.fasterxml.jackson.dataformat:jackson-dataformat-smile:${versions.jackson_databind}"
++    resolutionStrategy.force "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${versions.jackson_databind}"
++    resolutionStrategy.force "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${versions.jackson_databind}"
++    resolutionStrategy.force "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${versions.jackson_databind}"
+     resolutionStrategy.force "io.netty:netty-codec-http:${versions.netty}"
+     resolutionStrategy.force "io.netty:netty-codec-http2:${versions.netty}"
+     resolutionStrategy.force "io.netty:netty-codec:${versions.netty}"
+@@ -725,6 +725,6 @@ configurations.all {
+     resolutionStrategy.force "io.netty:netty-handler:${versions.netty}"
+     resolutionStrategy.force "io.netty:netty-resolver:${versions.netty}"
+     resolutionStrategy.force "io.netty:netty-transport-native-unix-common:${versions.netty}"
+-    resolutionStrategy.force 'org.apache.logging.log4j:log4j-api:2.25.3'
+-    resolutionStrategy.force 'org.apache.logging.log4j:log4j-core:2.25.3'
++    resolutionStrategy.force "org.apache.logging.log4j:log4j-api:${versions.log4j}"
++    resolutionStrategy.force "org.apache.logging.log4j:log4j-core:${versions.log4j}"
+ }
