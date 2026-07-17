@@ -154,16 +154,6 @@ components:
       - windows
     depends_on:
       - common-utils
-  - name: security-analytics
-    repository: https://github.com/opensearch-project/security-analytics.git
-    ref: tags/3.6.0.0
-    platforms:
-      - linux
-      - windows
-    depends_on:
-      - common-utils
-      - alerting
-      - job-scheduler
   - name: index-management
     repository: https://github.com/opensearch-project/index-management.git
     ref: tags/3.6.0.0

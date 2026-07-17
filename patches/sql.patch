@@ -1,7 +1,23 @@
+diff --git a/build.gradle b/build.gradle
+index 7c672cc..d2d5e7a 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -160,6 +160,8 @@ allprojects {
+         resolutionStrategy.force 'org.apache.commons:commons-text:1.11.0'
+         resolutionStrategy.force 'commons-io:commons-io:2.15.0'
+         resolutionStrategy.force 'org.yaml:snakeyaml:2.2'
++        resolutionStrategy.force 'com.jayway.jsonpath:json-path:2.10.0'
++        resolutionStrategy.force 'org.jooq:joou-java-6:0.9.5'
+         resolutionStrategy.dependencySubstitution {
+             substitute module('commons-lang:commons-lang') using module('org.apache.commons:commons-lang3:3.18.0') because 'CVE-2025-48924: commons-lang 2.x vulnerable to StackOverflowError'
+         }
 diff --git a/core/build.gradle b/core/build.gradle
+index 23f9b37..f1e7f16 100644
 --- a/core/build.gradle
 +++ b/core/build.gradle
-@@ -61,8 +61,8 @@ dependencies {
+@@ -58,10 +58,10 @@ dependencies {
+     api group: 'com.google.code.gson', name: 'gson', version: '2.8.9'
+     api group: 'com.tdunning', name: 't-digest', version: '3.3'
      api "net.minidev:json-smart:${versions.json_smart}"
 -    api('org.apache.calcite:calcite-core:1.41.0') {
 +    api('org.apache.calcite:calcite-core:1.42.0') {
@@ -10,3 +26,34 @@ diff --git a/core/build.gradle b/core/build.gradle
 -    api 'org.apache.calcite:calcite-linq4j:1.41.0'
 +    api 'org.apache.calcite:calcite-linq4j:1.42.0'
      api project(':common')
+     implementation "com.github.seancfoley:ipaddress:5.4.2"
+     implementation "com.jayway.jsonpath:json-path:2.9.0"
+diff --git a/core/src/main/java/org/opensearch/sql/executor/OpenSearchTypeSystem.java b/core/src/main/java/org/opensearch/sql/executor/OpenSearchTypeSystem.java
+index b84d7dc..0e2ecda 100644
+--- a/core/src/main/java/org/opensearch/sql/executor/OpenSearchTypeSystem.java
++++ b/core/src/main/java/org/opensearch/sql/executor/OpenSearchTypeSystem.java
+@@ -25,13 +25,19 @@ public class OpenSearchTypeSystem extends RelDataTypeSystemImpl {
+   private OpenSearchTypeSystem() {}
+ 
+   @Override
+-  public int getMaxNumericPrecision() {
+-    return MAX_PRECISION;
++  public int getMaxPrecision(SqlTypeName typeName) {
++    if (typeName == SqlTypeName.DECIMAL) {
++      return MAX_PRECISION;
++    }
++    return super.getMaxPrecision(typeName);
+   }
+ 
+   @Override
+-  public int getMaxNumericScale() {
+-    return MAX_SCALE;
++  public int getMaxScale(SqlTypeName typeName) {
++    if (typeName == SqlTypeName.DECIMAL) {
++      return MAX_SCALE;
++    }
++    return super.getMaxScale(typeName);
+   }
+ 
+   @Override
+

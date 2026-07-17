@@ -1,7 +1,10 @@
 diff --git a/plugin/build.gradle b/plugin/build.gradle
+index d3fc0dd..87cf678 100644
 --- a/plugin/build.gradle
 +++ b/plugin/build.gradle
-@@ -710,11 +710,11 @@ configurations.all {
+@@ -707,12 +707,12 @@ configurations.all {
+     resolutionStrategy.force "software.amazon.awssdk:s3:${versions.aws}"
+     resolutionStrategy.force "com.fasterxml.jackson.core:jackson-annotations:${versions.jackson_annotations}"
      resolutionStrategy.force 'com.networknt:json-schema-validator:1.5.7'
 -    resolutionStrategy.force 'com.fasterxml.jackson:jackson-bom:2.18.3'
 +    resolutionStrategy.force "com.fasterxml.jackson:jackson-bom:${versions.jackson_databind}"
@@ -17,7 +20,7 @@ diff --git a/plugin/build.gradle b/plugin/build.gradle
      resolutionStrategy.force "io.netty:netty-codec-http:${versions.netty}"
      resolutionStrategy.force "io.netty:netty-codec-http2:${versions.netty}"
      resolutionStrategy.force "io.netty:netty-codec:${versions.netty}"
-@@ -725,6 +725,6 @@ configurations.all {
+@@ -722,8 +722,8 @@ configurations.all {
      resolutionStrategy.force "io.netty:netty-handler:${versions.netty}"
      resolutionStrategy.force "io.netty:netty-resolver:${versions.netty}"
      resolutionStrategy.force "io.netty:netty-transport-native-unix-common:${versions.netty}"
@@ -26,3 +29,6 @@ diff --git a/plugin/build.gradle b/plugin/build.gradle
 +    resolutionStrategy.force "org.apache.logging.log4j:log4j-api:${versions.log4j}"
 +    resolutionStrategy.force "org.apache.logging.log4j:log4j-core:${versions.log4j}"
  }
+ 
+ apply plugin: 'com.netflix.nebula.ospackage'
+

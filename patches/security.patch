@@ -1,0 +1,30 @@
+diff --git a/build.gradle b/build.gradle
+index 89a749a..92433a5 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -492,6 +492,12 @@ configurations {
+             force "io.netty:netty-handler:${versions.netty}"
+             force "io.netty:netty-transport:${versions.netty}"
+             force "io.netty:netty-transport-native-unix-common:${versions.netty}"
++            force "io.netty:netty-codec:${versions.netty}"
++            force "io.netty:netty-codec-http:${versions.netty}"
++            force "io.netty:netty-codec-http2:${versions.netty}"
++            force "io.netty:netty-codec-http3:${versions.netty}"
++            force "io.netty:netty-codec-compression:${versions.netty}"
++            force "io.netty:netty-codec-classes-quic:${versions.netty}"
+             force "com.github.luben:zstd-jni:${versions.zstd}"
+             force "org.xerial.snappy:snappy-java:1.1.10.8"
+             force "com.google.guava:guava:${guava_version}"
+diff --git a/libs/opensaml/build.gradle b/libs/opensaml/build.gradle
+index c202dfb..bd4b2f8 100644
+--- a/libs/opensaml/build.gradle
++++ b/libs/opensaml/build.gradle
+@@ -32,6 +32,7 @@ configurations.all {
+         force "org.bouncycastle:bcprov-jdk18on:1.83"
+         force "org.apache.commons:commons-lang3:${versions.commonslang}"
+         force "com.fasterxml.jackson.core:jackson-core:${versions.jackson}"
++        force "com.fasterxml.jackson.core:jackson-databind:${versions.jackson_databind}"
+     }
+ }
+ 
+

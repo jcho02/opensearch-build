@@ -1,0 +1,12 @@
+diff --git a/build.gradle b/build.gradle
+index 21b7f02..88c9c24 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -275,6 +275,7 @@ dependencies {
+             force("com.google.errorprone:error_prone_annotations:${versions.error_prone_annotations}")
+             force("org.apache.httpcomponents.core5:httpcore5:${versions.httpcore5}")
+             force("org.apache.httpcomponents.core5:httpcore5-h2:${versions.httpcore5}")
++            force("org.apache.httpcomponents.client5:httpclient5:${versions.httpclient5}")
+ 
+             if (System.getenv('REMOTE_METADATA_SDK_IMPL') == 'ddb-client') {
+                 // OpenSearch Java client brings in different versions of the below dependencies.

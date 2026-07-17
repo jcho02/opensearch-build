@@ -1,8 +1,37 @@
+diff --git a/buildSrc/src/main/java/org/opensearch/gradle/OpenSearchJavaPlugin.java b/buildSrc/src/main/java/org/opensearch/gradle/OpenSearchJavaPlugin.java
+index baeaeb72..38a69b40 100644
+--- a/buildSrc/src/main/java/org/opensearch/gradle/OpenSearchJavaPlugin.java
++++ b/buildSrc/src/main/java/org/opensearch/gradle/OpenSearchJavaPlugin.java
+@@ -127,7 +127,23 @@ public class OpenSearchJavaPlugin implements Plugin<Project> {
+                 // just a self contained test-fixture configuration, likely transitive and hellacious
+                 return;
+             }
+-            configuration.resolutionStrategy(ResolutionStrategy::failOnVersionConflict);
++            configuration.resolutionStrategy(strategy -> {
++                strategy.failOnVersionConflict();
++                strategy.eachDependency(details -> {
++                    String group = details.getRequested().getGroup();
++                    String name = details.getRequested().getName();
++                    // Force jackson modules to 2.21.5 (excludes jackson-annotations which uses "2.21" scheme)
++                    if (("com.fasterxml.jackson.core".equals(group) && !"jackson-annotations".equals(name))
++                        || "com.fasterxml.jackson.datatype".equals(group)
++                        || "com.fasterxml.jackson.dataformat".equals(group)
++                        || "com.fasterxml.jackson".equals(group)) {
++                        details.useVersion("2.21.5");
++                    }
++                    if ("org.apache.logging.log4j".equals(group)) {
++                        details.useVersion("2.25.4");
++                    }
++                });
++            });
+         });
+ 
+         // force all dependencies added directly to compile/testImplementation to be non-transitive, except for ES itself
 diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
-index 23e45f4cf44..f11279f9b2e 100644
+index 23e45f4c..6a9304ff 100644
 --- a/gradle/libs.versions.toml
 +++ b/gradle/libs.versions.toml
-@@ -4,7 +4,7 @@ opensearch        = "3.6.0"
+@@ -3,18 +3,18 @@ opensearch        = "3.6.0"
  lucene            = "10.4.0"
  
  bundled_jdk_vendor = "adoptium"
@@ -11,7 +40,6 @@ index 23e45f4cf44..f11279f9b2e 100644
  
  # optional dependencies
  spatial4j               = "0.7"
-@@ -10,11 +10,11 @@ spatial4j               = "0.7"
  jts                     = "1.15.0"
  jackson_annotations     = "2.21"
  jackson                 = "2.21.2"
