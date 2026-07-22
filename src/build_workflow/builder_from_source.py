@@ -19,6 +19,7 @@ It will notify the build recorder of build information such as repository and gi
 Artifacts found in "<build root>/artifacts/<maven|plugins|libs|dist|core-plugins>" will be recognized and recorded.
 """
 
+OPENSEARCH_PATCH_FILE = os.path.join(os.getcwd(), "opensearch.patch")
 
 class BuilderFromSource(Builder):
     def checkout(self, work_dir: str) -> None:
@@ -28,6 +29,15 @@ class BuilderFromSource(Builder):
             os.path.join(work_dir, self.component.name),
             self.component.working_directory,
         )
+        # Apply OpenSearch core patch (opensearch.patch) if building OpenSearch
+        if self.component.name == "OpenSearch":
+            if os.path.isfile(OPENSEARCH_PATCH_FILE):
+                logging.info(f"Applying patch {OPENSEARCH_PATCH_FILE} to {self.component.name}")
+                self.git_repo.execute(f"git apply {OPENSEARCH_PATCH_FILE}")
+                logging.info(f"Successfully applied patch to {self.component.name}")
+            else:
+                logging.warning(f"Patch file not found: {OPENSEARCH_PATCH_FILE}")
+
         self._apply_ppc64le_gradle_fix()
         self._apply_kotlin_version_fix()
 

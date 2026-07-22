@@ -87,7 +87,7 @@ else
     echo $PRODUCT $PRODUCT_ALT.yml
 fi
 
-if [ "$ARCHITECTURE" != "x64" ] && [ "$ARCHITECTURE" != "arm64" ]
+if [ "$ARCHITECTURE" != "x64" ] && [ "$ARCHITECTURE" != "arm64" ] && [ "$ARCHITECTURE" != "ppc64le" ]
 then
     echo "We only support 'x64' and 'arm64' as architecture name for -a parameter"
     exit 1
@@ -123,6 +123,5 @@ else
 fi
 
 # Docker build
-docker build --build-arg VERSION=$VERSION --build-arg BUILD_DATE=`date -u +%Y-%m-%dT%H:%M:%SZ` --build-arg NOTES=$NOTES -f $DOCKERFILE $DIR -t opensearchproject/$PRODUCT:$VERSION
+docker build --no-cache --build-arg VERSION=$VERSION --build-arg BUILD_DATE=`date -u +%Y-%m-%dT%H:%M:%SZ` --build-arg NOTES=$NOTES --secret id=artifactory_user_secret,env=artifactory_user --secret id=artifactory_token_secret,env=artifactory_token -f $DOCKERFILE $DIR -t opensearchproject/$PRODUCT:$VERSION
 docker tag opensearchproject/$PRODUCT:$VERSION opensearchproject/$PRODUCT:latest
-
