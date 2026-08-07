@@ -87,7 +87,7 @@ else
     echo $PRODUCT $PRODUCT_ALT.yml
 fi
 
-if [ "$ARCHITECTURE" != "x64" ] && [ "$ARCHITECTURE" != "arm64" ]
+if [ "$ARCHITECTURE" != "x64" ] && [ "$ARCHITECTURE" != "arm64" ] && [ "$ARCHITECTURE" != "ppc64le" ]
 then
     echo "We only support 'x64' and 'arm64' as architecture name for -a parameter"
     exit 1

@@ -14,7 +14,7 @@
 
 
 ########################### Stage 0 ########################
-FROM public.ecr.aws/amazonlinux/amazonlinux:2023 AS linux_stage_0
+FROM registry.access.redhat.com/ubi10:latest  AS linux_stage_0
 
 ARG UID=1000
 ARG GID=1000
@@ -39,7 +39,7 @@ RUN groupadd -g $GID opensearch && \
 # Copy artifacts and configurations to corresponding directories
 COPY * $TEMP_DIR/
 RUN ls -l $TEMP_DIR && \
-    tar -xzpf /tmp/opensearch/opensearch-`uname -p`.tgz -C $OPENSEARCH_HOME --strip-components=1 && \
+    tar -xzpf /tmp/opensearch/opensearch-ppc64le.tgz -C $OPENSEARCH_HOME --strip-components=1 && \
     MAJOR_VERSION_ENTRYPOINT=`echo $VERSION | cut -d. -f1` && \
     echo $MAJOR_VERSION_ENTRYPOINT && \
     if ! (ls $TEMP_DIR | grep -E "opensearch-docker-entrypoint-.*.x.sh" | grep $MAJOR_VERSION_ENTRYPOINT); then MAJOR_VERSION_ENTRYPOINT="default"; fi && \
@@ -55,7 +55,7 @@ RUN ls -l $TEMP_DIR && \
 
 ########################### Stage 1 ########################
 # Copy working directory to the actual release docker images
-FROM public.ecr.aws/amazonlinux/amazonlinux:2023
+FROM registry.access.redhat.com/ubi10:latest
 
 ARG UID=1000
 ARG GID=1000

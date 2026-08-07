@@ -1,0 +1,13 @@
+diff --git a/jni/cmake/init-nmslib.cmake b/jni/cmake/init-nmslib.cmake
+index 1234567..89abcde 100644
+--- a/jni/cmake/init-nmslib.cmake
++++ b/jni/cmake/init-nmslib.cmake
+@@ -51,4 +51,8 @@ foreach(PATCH_FILE IN LISTS PATCH_FILES_TO_APPLY)
+     endif()
+ endforeach()
+
++if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc64le|ppc64")
++    set(NMSLIB_SIMD_FLAGS "-mcpu=native" CACHE STRING "SIMD compile flags for NMSLIB" FORCE)
++endif()
+
+ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/nmslib/similarity_search)
